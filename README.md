@@ -1,63 +1,106 @@
-# JKI (Jake Voice)
+# JKI — Jake Voice Companion
 
-A small Linux desktop companion that listens for the wake word **Jake**, sends addressed requests to an existing Codex conversation, and speaks the replies. It includes an animated GTK orb, local wake-word and command recognition, local speech synthesis, model switching, and optional media controls.
+Jake is a voice-controlled Linux desktop companion for Codex. Say **“Jake”** and a command; Jake transcribes it locally, sends the request to an existing Codex conversation, and reads the reply aloud.
 
-## What it does
+> Built for Linux desktops, with a GTK orb, local speech models, and optional music controls.
 
-- Vosk listens locally for the wake word. Whisper transcribes a command only after Jake is addressed.
-- Commands go to a Codex App Server thread over its local Unix socket.
-- Piper provides neural speech synthesis. eSpeak NG is used if Piper is unavailable.
-- The GTK orb shows listening, working, speaking, offline, and muted states.
-- Optional `mpv`, `yt-dlp`, and `playerctl` integration handles music playback and controls.
+## How it works
 
-Audio is processed locally and is not saved by JKI. Only commands addressed to Jake are sent to Codex. The wake word is not speaker authentication: anyone who can reach the microphone may be able to issue commands.
+```mermaid
+flowchart LR
+    Mic[Microphone] --> Wake[Vosk wake-word detection]
+    Wake -->|“Jake” detected| STT[Whisper command transcription]
+    STT --> Codex[Codex App Server]
+    Codex --> TTS[Piper speech]
+    TTS --> Reply[Spoken reply]
+```
+
+Vosk and Whisper run on your computer. Jake sends only commands spoken after the wake word; it does not save microphone recordings. The wake word is not speaker authentication, so anyone near the microphone may be able to issue commands.
+
+## Features
+
+- Animated GTK orb for listening, working, speaking, offline, and muted states.
+- Local Vosk wake-word detection and Whisper command transcription.
+- Natural Piper speech, with eSpeak NG as a fallback.
+- Voice requests and model switching through the Codex App Server.
+- Optional music search and playback with `mpv` and `yt-dlp`, plus player controls through `playerctl`.
+- User-level systemd service for automatic startup on Hyprland.
 
 ## Requirements
 
-This version targets Linux, GTK 4, PipeWire, and a running Codex App Server. On Arch Linux, install the system packages that provide GTK 4, Gtk4LayerShell, PyGObject, Pycairo, PipeWire (`pw-record` and `pw-play`), and eSpeak NG. For music commands, install `mpv`, `yt-dlp`, and `playerctl`.
+This project currently targets Linux with GTK 4, Hyprland, PipeWire, and Codex's local App Server. It is developed and tested on Arch Linux.
 
-Create the application directory and a virtual environment that can see the system GTK bindings:
+Install system packages that provide:
+
+- GTK 4, Gtk4LayerShell, PyGObject, and Pycairo
+- PipeWire's `pw-record` and `pw-play`
+- eSpeak NG
+- For music controls: `mpv`, `yt-dlp`, and `playerctl`
+
+You also need Python, a working Codex CLI installation, and the local Codex App Server socket for the conversation Jake should use.
+
+## Installation
+
+Clone the repository and install the Python dependencies into a virtual environment that can access the system GTK bindings:
 
 ```sh
-mkdir -p ~/.local/share/jake-voice
+git clone https://github.com/ridjan-xhika/JKI.git
+cd JKI
+
+mkdir -p ~/.local/share/jake-voice ~/.config/jake-voice
+cp engine.py jake.py music.py orb.py ~/.local/share/jake-voice/
 python -m venv --system-site-packages ~/.local/share/jake-voice/venv
 ~/.local/share/jake-voice/venv/bin/pip install -r requirements.txt
 ```
 
-Copy `engine.py`, `jake.py`, `music.py`, and `orb.py` into `~/.local/share/jake-voice/`. Download the Vosk model from [alphacephei.com/vosk/models](https://alphacephei.com/vosk/models) and extract it under `~/.local/share/jake-voice/`. Whisper's `base.en` model is downloaded by faster-whisper on first use. Download the Piper voice with:
+### Download speech models
+
+Download and extract the small US English Vosk model from the [Vosk model list](https://alphacephei.com/vosk/models) into `~/.local/share/jake-voice/`. Whisper's `base.en` model downloads automatically on first run. Install the Piper Lessac voice with:
 
 ```sh
-~/.local/share/jake-voice/venv/bin/python -m piper.download_voices en_US-lessac-medium --download-dir ~/.local/share/jake-voice/voices
+~/.local/share/jake-voice/venv/bin/python -m piper.download_voices \
+  en_US-lessac-medium --download-dir ~/.local/share/jake-voice/voices
 ```
 
-Create the configuration directory and copy `config.example.json` to `~/.config/jake-voice/config.json`. Set `thread_id` to the Codex conversation to attach to, and update the model, Codex socket, and Codex CLI paths for your machine. Use absolute paths. Set `full_access` to `true` only if you want Codex to use the current user's full filesystem and application permissions; it does not grant root access. The wake word does not verify who is speaking.
+### Configure Codex
 
-## Start at login on Hyprland
+Copy [`config.example.json`](config.example.json) to `~/.config/jake-voice/config.json`. Replace `USER` in the example paths with your Linux username, set `thread_id` to the Codex conversation to use, and adjust `socket_path` and `codex_path` for your installation.
 
-Copy `jake-voice.service` to `~/.config/systemd/user/jake-voice.service`, then enable it:
+The example sets `full_access` to `false`, so JKI does not request a permission override. If set to `true`, JKI requests full access for that Codex thread, within your Linux user's permissions; it does not grant root access. Check your normal Codex session permissions as well. The wake word does not distinguish you from another speaker.
+
+### Start automatically on Hyprland
+
+Install and enable the user service:
 
 ```sh
+mkdir -p ~/.config/systemd/user
+cp jake-voice.service ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now jake-voice.service
 ```
 
-The unit is attached to `hyprland-session.target`. Ensure your compositor imports its Wayland environment into the systemd user manager before starting that target. Ryoku does this during Hyprland startup. On another desktop, adapt the target and environment import to that session.
+The service starts with `hyprland-session.target`. Your compositor must import its Wayland environment into the systemd user manager before starting that target. Ryoku performs this step during login. Other Hyprland setups may need to configure the environment import themselves.
 
-Useful commands:
+## Useful commands
 
 ```sh
 systemctl --user status jake-voice.service
 systemctl --user stop jake-voice.service
 journalctl --user -u jake-voice.service -f
-~/.local/share/jake-voice/venv/bin/python ~/.local/share/jake-voice/jake.py check
+~/.local/share/jake-voice/venv/bin/python \
+  ~/.local/share/jake-voice/jake.py check
 ```
 
-Run the unit tests from this repository with `python -m unittest`.
+Run the tests from the repository with:
 
-## Configuration example
+```sh
+python -m unittest
+```
 
-See [`config.example.json`](config.example.json). It contains placeholders only; do not publish your personal configuration file or model files.
+## Configuration and model files
+
+`config.example.json` is a template with placeholders. Keep your real configuration, downloaded models, and credentials out of the repository. Model files are not included; download them from their official sources and follow their individual licenses.
 
 ## License
 
-JKI source code is provided under the MIT License. Speech models and runtime dependencies have their own licenses; obtain and use them according to their respective terms.
+JKI source code is released under the [MIT License](LICENSE). Speech models and runtime dependencies have separate licenses.
