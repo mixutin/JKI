@@ -1,0 +1,27 @@
+WARNING: The directory '/home/oai/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Processing ./dist/jki_voice-0.2.0-py3-none-any.whl
+Installing collected packages: jki-voice
+Successfully installed jki-voice-0.2.0
+0.2.0
+usage: __main__.py [-h] [--version] [--config CONFIG] [--json] [--live]
+                   [--text TEXT] [--manifest MANIFEST]
+                   [--destination DESTINATION] [--wav WAV]
+                   [--iterations ITERATIONS]
+                   [{run,setup,doctor,check,devices,models,say,benchmark,install-desktop,demo}]
+
+JKI / Jake Voice: local speech companion for Codex
+
+positional arguments:
+  {run,setup,doctor,check,devices,models,say,benchmark,install-desktop,demo}
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --config CONFIG
+  --json                Print machine-readable diagnostics
+  --live                Opt into read-only local Codex checks
+  --text TEXT
+  --manifest MANIFEST
+  --destination DESTINATION
+  --wav WAV             Optional local WAV for real offline ASR benchmarking
+  --iterations ITERATIONS

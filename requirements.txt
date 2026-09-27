@@ -1,6 +1,5 @@
-faster-whisper>=1.2.1
-numpy>=2.0
-onnxruntime>=1.20
-piper-tts>=1.8
-vosk>=0.3.45
-websockets>=14
+# Compatibility with the original source installation command.
+# Install from the repository root; GTK/PipeWire remain system dependencies.
+.[audio]
+# Optional neural speech output: python -m pip install '.[audio,piper]'
+# This file is NOT a complete dependency lock; see docs/TESTING.md.

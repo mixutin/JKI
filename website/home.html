@@ -1,0 +1,69 @@
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-grid"></div>
+  <div class="hero-copy">
+    <p class="eyebrow"><span class="status-light"></span> A LITTLE PRESENCE. A LOT OF POSSIBILITY.</p>
+    <h1 id="hero-title">Your ideas.<br>Your voice.<br><em>Meet Jake.</em></h1>
+    <p class="hero-description">A voice companion for your Linux desktop.<br>Speak naturally. Work with Codex. Stay in control.</p>
+    <div class="hero-actions"><a class="button primary" href="{{root}}docs/install/">Make yourself heard <span aria-hidden="true">↗</span></a><a class="text-link" href="#experience">Meet your companion <span aria-hidden="true">↓</span></a></div>
+    <div class="hero-meta"><span>OPEN SOURCE</span><i></i><span>BUILT FOR LINUX</span><i></i><span>LOCAL SPEECH</span></div>
+  </div>
+  <div class="orb-stage" id="orb-stage" data-state="listening">
+    <div class="orb-halo"></div><div class="orb-fallback" aria-hidden="true"></div>
+    <canvas id="jake-orb" aria-label="Interactive three-dimensional Jake orb. Select a state below to change its appearance." role="img"></canvas>
+    <div class="orbit-label orbit-label-top"><span class="crosshair">+</span><span>A PRESENCE,<br>NOT ANOTHER WINDOW.</span></div>
+    <div class="orbit-label orbit-label-bottom"><span id="orb-state-label">01 / LISTENING</span><span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
+    <div class="orb-controls" role="group" aria-label="Orb visual preview">
+      <button class="orb-state active" data-state="listening" aria-pressed="true"><span></span> Listening</button>
+      <button class="orb-state" data-state="working" aria-pressed="false"><span></span> Working</button>
+      <button class="orb-state" data-state="speaking" aria-pressed="false"><span></span> Speaking</button>
+    </div>
+    <p class="orb-caption">A visual exploration of Jake. No microphone access.</p>
+    <button id="pause-motion" class="motion-control" aria-pressed="false">Pause animation</button>
+  </div>
+  <div class="hero-bottom"><span>LESS FRICTION. MORE FLOW.</span><span>SCROLL TO EXPLORE <span aria-hidden="true">↘</span></span></div>
+</section>
+<section class="manifesto section-shell" id="experience">
+  <div class="section-label"><span>01 — A MORE NATURAL WAY</span><span class="section-rule"></span></div>
+  <div class="manifesto-grid"><h2>You have a thought.<br><span>Give it a voice.</span></h2><p>Some ideas move faster than a keyboard. Jake brings local speech recognition, spoken replies, and a small animated companion to your existing Codex conversation. Your workflow, with a little more room to think.</p></div>
+  <div class="flow-grid">
+    <article class="flow-card"><span class="step-number">01</span><div class="wave-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><h3>Say what’s next.</h3><p>Hold to talk, or use a wake word. Vosk and Whisper process speech on your computer.</p><span class="card-note">THOUGHT → WORDS</span></article>
+    <article class="flow-card"><span class="step-number">02</span><div class="review-art" aria-hidden="true"><span>Review your request</span><div></div><div></div><b>Ready when you are ↗</b></div><h3>Make it yours.</h3><p>Review and edit your words before they reach Codex. Choose the model and reasoning level for the task.</p><span class="card-note">WORDS → INTENTION</span></article>
+    <article class="flow-card"><span class="step-number">03</span><div class="response-art" aria-hidden="true"><span>✦</span><i>Here’s what I found.</i></div><h3>Keep the conversation going.</h3><p>Hear replies and factual progress as work happens. Pause speech or cancel a task when you need to.</p><span class="card-note">INTENTION → PROGRESS</span></article>
+  </div>
+</section>
+<section class="product-section section-shell" id="in-action">
+  <div class="product-copy"><p class="eyebrow">02 — SMALL COMPANION. CLEAR FEEDBACK.</p><h2>Quietly there.<br><em>Until you need it.</em></h2><p>A glance tells you what’s happening. A conversation keeps the work moving. Jake’s desktop orb reflects listening, work, and speech without taking over your space.</p><div class="feature-lines"><span><b>01</b> Review before sending</span><span><b>02</b> See progress as it happens</span><span><b>03</b> Keep the final say</span></div><a class="text-link" href="{{root}}docs/controls/">Explore the controls <span aria-hidden="true">↗</span></a></div>
+  <div class="desktop-preview">
+    <div class="desktop-top"><div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div><span>A MOMENT WITH JAKE</span><span class="desktop-clock">LOCAL DEMO</span></div>
+    <div class="preview-ambient"></div>
+    <div class="companion-card"><div class="mini-orb" aria-hidden="true"></div><div class="companion-heading"><span class="status-light"></span><span id="demo-state">Here when you need me</span></div><p id="demo-copy">One thought can start something good.</p><div class="demo-request">“Help me understand this project.”</div><div class="demo-progress" id="demo-progress"><span>01 / Ready to listen</span><i></i></div><button class="button secondary" id="demo-next">Try the preview <span aria-hidden="true">→</span></button><div class="preview-footer"><span>MICROPHONE OFF</span><span>NO TASKS EXECUTED</span></div></div>
+    <p class="mockup-label">INTERACTIVE DESIGN PREVIEW · NOT A DESKTOP SCREENSHOT</p>
+  </div>
+</section>
+<section class="control-section section-shell" id="control">
+  <div class="section-label"><span>03 — THE CONTROLS STAY WITH YOU</span><span class="section-rule"></span></div>
+  <div class="control-heading"><h2>Your voice.<br><em>Your call.</em></h2><p>A helpful companion should make its boundaries clear. Jake is designed around visible choices, explicit approvals, and controls you can reach.</p></div>
+  <div class="control-grid">
+    <article class="control-card"><span class="feature-icon" aria-hidden="true">◉</span><h3>Local speech processing</h3><p>Wake-word detection, transcription, and speech synthesis run locally. Approved requests go to the Codex service.</p><a href="{{root}}docs/privacy/">Understand the data flow <span aria-hidden="true">↗</span></a></article>
+    <article class="control-card"><span class="feature-icon" aria-hidden="true">⌘</span><h3>Human decisions</h3><p>Review transcripts and permission requests. Choose a restricted, workspace, or explicitly confirmed full-access profile.</p><a href="{{root}}docs/security/">Read the permission model <span aria-hidden="true">↗</span></a></article>
+    <article class="control-card"><span class="feature-icon" aria-hidden="true">Ⅱ</span><h3>Room to pause</h3><p>Mute the microphone, stop the voice, or request task cancellation. Three different intentions. Three clear controls.</p><a href="{{root}}docs/controls/">Learn the daily controls <span aria-hidden="true">↗</span></a></article>
+  </div>
+</section>
+<section class="getting-started section-shell" id="start">
+  <div><p class="eyebrow">04 — LET’S GET ACQUAINTED</p><h2>A few commands.<br>A new way <em>to work.</em></h2><p>Jake is a development project for Linux. Bring Python 3.11+, the desktop dependencies, local speech models, and a compatible Codex App Server.</p><a class="text-link" href="{{root}}docs/install/">Follow the complete installation guide <span aria-hidden="true">↗</span></a><div class="development-note"><span class="status-light"></span><div><b>Built in the open.</b><span>Native desktop and live Codex validation are still in progress. Start with the setup guide and validation checklist.</span></div></div></div>
+  <div class="terminal"><div class="terminal-header"><span>YOUR TERMINAL</span><button data-copy="install-command" class="copy-button">Copy commands</button></div><pre id="install-command"><code>git clone https://github.com/ridjan-xhika/JKI.git
+cd JKI
+python3 -m venv --system-site-packages .venv
+. .venv/bin/activate
+python -m pip install '.[audio]'
+jki setup
+jki doctor
+jki run</code></pre><div class="terminal-bottom"><span>INSTALL SYSTEM DEPENDENCIES & MODELS FIRST</span><a href="{{root}}docs/install/" aria-label="Open installation guide">↗</a></div></div>
+</section>
+<section class="docs-section section-shell">
+  <div class="docs-heading"><div><p class="eyebrow">EVERY DETAIL, OUT IN THE OPEN</p><h2>Find your next step.</h2></div><a class="text-link" href="{{root}}docs/">All documentation <span aria-hidden="true">↗</span></a></div>
+  <div class="docs-cards"><a href="{{root}}docs/install/"><span>START HERE</span><h3>From hello<br>to up and running.</h3><p>Installation, models, and first-run checks.</p><b aria-hidden="true">↗</b></a><a href="{{root}}docs/architecture/"><span>LOOK INSIDE</span><h3>Understand<br>the moving parts.</h3><p>Architecture, protocol, and lifecycle.</p><b aria-hidden="true">↗</b></a><a href="{{root}}docs/contributing/"><span>MAKE IT BETTER</span><h3>A companion,<br>built together.</h3><p>Tests, contribution guide, and open issues.</p><b aria-hidden="true">↗</b></a></div>
+</section>
+<section class="closing section-shell"><p class="eyebrow">GIVE YOUR NEXT IDEA A VOICE.</p><h2>Hello, <em>Jake.</em></h2><a class="button primary" href="{{root}}docs/install/">Get started <span aria-hidden="true">↗</span></a><div class="closing-orbit" aria-hidden="true"></div></section>
+<script id="orb-fragment" type="x-shader/x-fragment">{{shader}}</script>
+<script src="{{root}}assets/orb.js" defer></script>

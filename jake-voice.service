@@ -1,15 +1,17 @@
+# Prefer `jki install-desktop`, which records the actual Python/config paths.
 [Unit]
-Description=Jake voice companion for Codex
-After=graphical-session.target hyprland-session.target pipewire.service
+Description=JKI (Jake Voice) local speech companion
+After=graphical-session.target pipewire.service
 PartOf=graphical-session.target
 
 [Service]
 Type=simple
-Environment=PYTHONUNBUFFERED=1
-ExecStart=%h/.local/share/jake-voice/venv/bin/python %h/.local/share/jake-voice/jake.py run
+UMask=0077
+NoNewPrivileges=yes
+ExecStart=%h/.local/share/jake-voice/venv/bin/python -m jki run
 Restart=on-failure
 RestartSec=5
-TimeoutStopSec=10
+TimeoutStopSec=15
 
 [Install]
-WantedBy=hyprland-session.target
+WantedBy=graphical-session.target

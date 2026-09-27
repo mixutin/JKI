@@ -1,0 +1,10 @@
+include LICENSE README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md config.example.json requirements.txt jake-voice.service
+recursive-include docs *.md *.json *.png *.jpg *.gif *.txt
+recursive-include tests *.py
+recursive-include tools *.py
+recursive-include packaging *
+recursive-include .github *.yml
+
+include SOURCE-MANIFEST.json
+
+recursive-include website *.py *.txt *.html *.css *.js *.svg *.glsl

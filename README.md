@@ -1,114 +1,95 @@
-# JKI — Jake Voice Companion
+# JKI · Jake Voice
 
-Jake is a voice-controlled Linux desktop companion for Codex. Say **“Jake”** and a command; Jake transcribes it locally, sends the request to an existing Codex conversation, and reads the reply aloud.
+A Linux voice companion for Codex, with local speech processing and visible control over desktop actions.
 
-> Built for Linux desktops, with a GTK orb, local speech models, and optional music controls.
+**0.2.0 development proposal — native desktop/audio and live task integration still require validation.**
+JKI is the project name; Jake Voice is the application; “Jake” is the configurable wake name.
 
-## How it works
+![Production Cairo orb renderer preview, not a desktop screenshot](docs/assets/orb-states.png)
 
-```mermaid
-flowchart LR
-    Mic[Microphone] --> Wake[Vosk wake-word detection]
-    Wake -->|“Jake” detected| STT[Whisper command transcription]
-    STT --> Codex[Codex App Server]
-    Codex --> TTS[Piper speech]
-    TTS --> Reply[Spoken reply]
-```
+## A conversation you can control
 
-Vosk and Whisper run on your computer. Jake sends only commands spoken after the wake word; it does not save microphone recordings. The wake word is not speaker authentication, so anyone near the microphone may be able to issue commands.
+Use push-to-talk or a local Vosk wake-word gate. Whisper transcribes locally, then an editable
+preview lets you decide what to send. After Codex acknowledges a task, Jake says **“I'm doing it now.”**
+Real plan steps, tool activity, and assistant commentary provide progress. Spoken progress is
+rate-limited (20 seconds by default); the screen continues to update. There are no invented
+percentages, timed promises, or success announcements before a terminal backend event.
 
-## Features
+Mute microphone, stop speaking, and cancel task are separate controls. Command and file approvals
+show their details and require an on-screen decision. Missing details disable acceptance.
+Cancellation waits for confirmation and does not claim to undo earlier changes.
 
-- Animated GTK orb for listening, working, speaking, offline, and muted states.
-- Local Vosk wake-word detection and Whisper command transcription.
-- Natural Piper speech, with eSpeak NG as a fallback.
-- Voice requests, model switching, and model-specific reasoning controls through the Codex App Server.
-- Optional music search and playback with `mpv` and `yt-dlp`, plus player controls through `playerctl`.
-- User-level systemd service for automatic startup on Hyprland.
+## Start here
 
-## Requirements
-
-This project currently targets Linux with GTK 4, Hyprland, PipeWire, and Codex's local App Server. It is developed and tested on Arch Linux.
-
-Install system packages that provide:
-
-- GTK 4, Gtk4LayerShell, PyGObject, and Pycairo
-- PipeWire's `pw-record` and `pw-play`
-- eSpeak NG
-- For music controls: `mpv`, `yt-dlp`, and `playerctl`
-
-You also need Python, a working Codex CLI installation, and the local Codex App Server socket for the conversation Jake should use.
-
-## Installation
-
-Clone the repository and install the Python dependencies into a virtual environment that can access the system GTK bindings:
+Install the Linux system dependencies in [INSTALL](docs/INSTALL.md), then from this checkout:
 
 ```sh
-git clone https://github.com/ridjan-xhika/JKI.git
-cd JKI
-
-mkdir -p ~/.local/share/jake-voice ~/.config/jake-voice
-cp engine.py jake.py music.py orb.py ~/.local/share/jake-voice/
-python -m venv --system-site-packages ~/.local/share/jake-voice/venv
-~/.local/share/jake-voice/venv/bin/pip install -r requirements.txt
+python3 -m venv --system-site-packages .venv
+. .venv/bin/activate
+python -m pip install '.[audio]'
+jki setup
+jki doctor
+jki run
 ```
 
-### Download speech models
-
-Download and extract the small US English Vosk model from the [Vosk model list](https://alphacephei.com/vosk/models) into `~/.local/share/jake-voice/`. Whisper's `base.en` model downloads automatically on first run. Install the Piper Lessac voice with:
+For Piper output, install `.[audio,piper]` and configure a local voice with its adjacent
+`.onnx.json`. Models are **not downloaded by ordinary startup, diagnostics, or transcription**.
+Prepare local models or use the explicit hash-verified manifest installer described in
+[MODELS](docs/MODELS.md). A curated, verified downloadable model catalog is not bundled yet.
 
 ```sh
-~/.local/share/jake-voice/venv/bin/python -m piper.download_voices \
-  en_US-lessac-medium --download-dir ~/.local/share/jake-voice/voices
+jki demo                         # Interactive fixture; no mic, backend, or speech output
+jki devices                      # Inspect available PipeWire input/output names
+jki say --text 'Playback test'    # Explicit test of configured speech output
+jki doctor --live --json          # Opt-in read-only local Codex compatibility check
+jki run --config /absolute/path/to/config.json
 ```
 
-### Configure Codex
+The original `python jake.py` entry point remains available. Configuration writes always use
+the same path that was loaded, including `--config`.
 
-Copy [`config.example.json`](config.example.json) to `~/.config/jake-voice/config.json`. Replace `USER` in the example paths with your Linux username, set `thread_id` to the Codex conversation to use, and adjust `socket_path` and `codex_path` for your installation.
+## Model and reasoning controls
 
-The example sets `full_access` to `false`, so JKI does not request a permission override. If set to `true`, JKI requests full access for that Codex thread, within your Linux user's permissions; it does not grant root access. Check your normal Codex session permissions as well. The wake word does not distinguish you from another speaker.
+Model and reasoning menus use the live account catalog. Selections are saved and sent explicitly with
+each new task, including after reconnects. Say “Use Sol with high reasoning” or “Set reasoning to max.”
+Changes apply to the next new task and do not restart ongoing work. See [daily controls](docs/CONTROLS.md).
 
-### Start automatically on Hyprland
+## Website and documentation
 
-Install and enable the user service:
+The Jake AI site includes an interactive 3D orb, a responsive landing page, and searchable documentation
+built from this repository. The [Pages workflow](.github/workflows/pages.yml) verifies every pull request
+and publishes from `main` after a maintainer enables GitHub Actions in Pages settings.
+See [website development and deployment](docs/WEBSITE.md).
+
+![Jake AI website preview](docs/assets/jake-ai-website.jpg)
+
+## Defaults that make the boundaries visible
+
+New setup defaults to restricted permissions, push-to-talk, transcript review, and no transcript
+persistence. Optional local media controls are disabled until enabled separately. A wake word is
+**not authentication**. Local audio processing does **not** mean the Codex service or media lookup
+is offline. Read [PRIVACY](docs/PRIVACY.md) and [SECURITY](SECURITY.md).
+
+## Development
 
 ```sh
-mkdir -p ~/.config/systemd/user
-cp jake-voice.service ~/.config/systemd/user/
-systemctl --user daemon-reload
-systemctl --user enable --now jake-voice.service
+python -m pip install '.[dev]'
+python -m unittest discover -v
+python -m pytest
+ruff check .
+mypy jki/config.py jki/state.py jki/text.py jki/speech_queue.py
+python -m build
 ```
 
-The service starts with `hyprland-session.target`. Your compositor must import its Wayland environment into the systemd user manager before starting that target. Ryoku performs this step during login. Other Hyprland setups may need to configure the environment import themselves.
+Tests use fake backends, a real local Unix-WebSocket fixture, and owned subprocesses. Live tests
+are opt-in. CI includes Python 3.11–3.13, core typing/linting, packaging, and a hardware-free GTK
+smoke job. These workflows must run on GitHub before their status can be claimed.
 
-## Useful commands
-
-Use the model and reasoning menus on the orb, or say:
-
-- “Jake, switch to Astra.”
-- “Jake, set reasoning to max.”
-- “Jake, use Sol with high reasoning.”
-
-Jake saves your selections and sends the model and effort with each new request. Available effort levels come from your account's model catalog. Changes apply to the next request; they do not restart work already in progress.
-
-```sh
-systemctl --user status jake-voice.service
-systemctl --user stop jake-voice.service
-journalctl --user -u jake-voice.service -f
-~/.local/share/jake-voice/venv/bin/python \
-  ~/.local/share/jake-voice/jake.py check
-```
-
-Run the tests from the repository with:
-
-```sh
-python -m unittest
-```
-
-## Configuration and model files
-
-`config.example.json` is a template with placeholders. Keep your real configuration, downloaded models, and credentials out of the repository. Model files are not included; download them from their official sources and follow their individual licenses.
+[Architecture](docs/ARCHITECTURE.md) · [Protocol contract](docs/PROTOCOL.md) ·
+[Testing and release checks](docs/TESTING.md) · [Performance](docs/PERFORMANCE.md) ·
+[Implementation coverage and remaining work](docs/IMPLEMENTATION.md) · [Publishing handoff](docs/PUBLISHING.md)
 
 ## License
 
-JKI source code is released under the [MIT License](LICENSE). Speech models and runtime dependencies have separate licenses.
+Source is MIT licensed. Speech models and dependencies have their own licenses. No model weights,
+recordings, user configuration, account credentials, or external conversations are distributed here.

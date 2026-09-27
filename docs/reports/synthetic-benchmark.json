@@ -1,0 +1,15 @@
+{
+  "python": "3.13.5",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "machine": "x86_64",
+  "processor": "not reported",
+  "backend_used": false,
+  "microphone_used": false,
+  "kind": "synthetic orchestration; NO audio, GUI, or model execution",
+  "timings": {
+    "count": 500,
+    "p50_seconds": 0.00010464050012615189,
+    "p95_seconds": 0.00013874100000066392
+  },
+  "process_peak_rss_kib_linux": 93484
+}

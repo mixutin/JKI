@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=JKI (Jake Voice)
+Comment=Local speech companion for Codex
+Exec=jki run
+Terminal=false
+Categories=Utility;
+Keywords=voice;assistant;Codex;speech;

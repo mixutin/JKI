@@ -1,0 +1,18 @@
+{
+  "python": "3.13.5",
+  "installed_versions": {
+    "pytest": "9.0.2",
+    "websockets": "16.0",
+    "setuptools": "82.0.1",
+    "wheel": "not installed",
+    "Pillow": "12.3.0",
+    "pycairo": "1.29.0"
+  },
+  "unavailable_checks": [
+    "ruff",
+    "mypy",
+    "native GTK/PipeWire/model playback",
+    "live Codex task lifecycle"
+  ],
+  "network_from_build_runtime": false
+}
