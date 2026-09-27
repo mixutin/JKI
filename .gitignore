@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+config.json
+*.onnx
+*.onnx.json
+vosk-model-*/
+whisper-*/
+voices/

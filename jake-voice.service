@@ -1,0 +1,15 @@
+[Unit]
+Description=Jake voice companion for Codex
+After=graphical-session.target hyprland-session.target pipewire.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+Environment=PYTHONUNBUFFERED=1
+ExecStart=%h/.local/share/jake-voice/venv/bin/python %h/.local/share/jake-voice/jake.py run
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+
+[Install]
+WantedBy=hyprland-session.target

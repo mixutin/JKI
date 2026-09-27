@@ -1,0 +1,12 @@
+{
+  "wake_word": "jake",
+  "thread_id": "REPLACE_WITH_CODEX_THREAD_ID",
+  "model": "gpt-6-astra",
+  "model_path": "/home/USER/.local/share/jake-voice/vosk-model-small-en-us-0.15",
+  "transcription_model_path": "base.en",
+  "socket_path": "/home/USER/.codex/app-server-control/app-server-control.sock",
+  "codex_path": "/usr/bin/codex",
+  "tts_engine": "piper",
+  "tts_model_path": "/home/USER/.local/share/jake-voice/voices/en_US-lessac-medium.onnx",
+  "full_access": false
+}
