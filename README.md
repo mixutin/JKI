@@ -22,7 +22,7 @@ Vosk and Whisper run on your computer. Jake sends only commands spoken after the
 - Animated GTK orb for listening, working, speaking, offline, and muted states.
 - Local Vosk wake-word detection and Whisper command transcription.
 - Natural Piper speech, with eSpeak NG as a fallback.
-- Voice requests and model switching through the Codex App Server.
+- Voice requests, model switching, and model-specific reasoning controls through the Codex App Server.
 - Optional music search and playback with `mpv` and `yt-dlp`, plus player controls through `playerctl`.
 - User-level systemd service for automatic startup on Hyprland.
 
@@ -82,6 +82,14 @@ systemctl --user enable --now jake-voice.service
 The service starts with `hyprland-session.target`. Your compositor must import its Wayland environment into the systemd user manager before starting that target. Ryoku performs this step during login. Other Hyprland setups may need to configure the environment import themselves.
 
 ## Useful commands
+
+Use the model and reasoning menus on the orb, or say:
+
+- “Jake, switch to Astra.”
+- “Jake, set reasoning to max.”
+- “Jake, use Sol with high reasoning.”
+
+Jake saves your selections and sends the model and effort with each new request. Available effort levels come from your account's model catalog. Changes apply to the next request; they do not restart work already in progress.
 
 ```sh
 systemctl --user status jake-voice.service

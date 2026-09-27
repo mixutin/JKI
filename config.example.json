@@ -2,6 +2,7 @@
   "wake_word": "jake",
   "thread_id": "REPLACE_WITH_CODEX_THREAD_ID",
   "model": "gpt-6-astra",
+  "effort": "medium",
   "model_path": "/home/USER/.local/share/jake-voice/vosk-model-small-en-us-0.15",
   "transcription_model_path": "base.en",
   "socket_path": "/home/USER/.codex/app-server-control/app-server-control.sock",

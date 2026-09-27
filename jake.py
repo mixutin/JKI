@@ -124,6 +124,15 @@ def run_gui(config):
         popover.set_child(choices)
         model.set_popover(popover)
         controls.append(model)
+        effort_button=Gtk.MenuButton(label='Medium ▾')
+        effort_popover=Gtk.Popover()
+        effort_choices=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=4)
+        effort_choices.set_margin_top(8);effort_choices.set_margin_bottom(8)
+        effort_choices.set_margin_start(8);effort_choices.set_margin_end(8)
+        effort_popover.set_child(effort_choices)
+        effort_button.set_popover(effort_popover)
+        effort_button.set_tooltip_text('Choose the model’s reasoning effort')
+        controls.append(effort_button)
         box.append(controls)
         chat=Gtk.Button(label='Open conversation ↗')
         chat.set_tooltip_text('Open this Codex conversation in a terminal')
@@ -132,7 +141,7 @@ def run_gui(config):
                              start_new_session=True)
         chat.connect('clicked',open_chat)
         box.append(chat)
-        previous={'models':[],'state':None}
+        previous={'models':[],'efforts':[],'state':None}
         titles={'starting':'Waking up','listening':'Here when you need me',
                 'hearing':'I’m listening','working':'On it','speaking':'Speaking',
                 'muted':'Taking a quiet moment','offline':'Reconnecting',
@@ -144,6 +153,7 @@ def run_gui(config):
             heard.set_text(('“'+s['heard']+'”') if s['heard'] else '')
             mute.set_label('Resume mic' if s['status']=='muted' else 'Mute mic')
             model.set_label(s['model'].removeprefix('gpt-').title()+' ▾')
+            effort_button.set_label(s['effort'].title()+' ▾')
             if s['models'] != previous['models']:
                 child=choices.get_first_child()
                 while child:
@@ -156,8 +166,23 @@ def run_gui(config):
                     button.connect('clicked',choose)
                     choices.append(button)
                 previous['models']=s['models']
+            selected=next((entry for entry in s['model_catalog'] if entry.get('model')==s['model']),{})
+            supported=[item.get('reasoningEffort') for item in selected.get('supportedReasoningEfforts',[])
+                       if item.get('reasoningEffort')]
+            if supported != previous['efforts']:
+                child=effort_choices.get_first_child()
+                while child:
+                    nxt=child.get_next_sibling();effort_choices.remove(child);child=nxt
+                for level in supported:
+                    button=Gtk.Button(label=level.title())
+                    def choose_effort(widget,value=level):
+                        engine.select_effort(value)
+                        effort_popover.popdown()
+                    button.connect('clicked',choose_effort)
+                    effort_choices.append(button)
+                previous['efforts']=supported
             # Status is local and contains only commands addressed to Jake.
-            state_key=(s['status'],s['detail'],s['model'],s['heard'])
+            state_key=(s['status'],s['detail'],s['model'],s['effort'],s['heard'])
             if state_key != previous['state']:
                 public={k:v for k,v in s.items() if k!='level'}
                 public['pid']=os.getpid()

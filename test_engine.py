@@ -1,5 +1,5 @@
 import unittest
-from engine import WakeGate, model_choice, speakable, Engine
+from engine import WakeGate, model_choice, effort_choice, speakable, Engine
 from music import music_query
 
 MODELS=['gpt-6-astra','gpt-6-sol','gpt-6-luna','gpt-5.6-sol','gpt-5.6-terra','gpt-5.5']
@@ -35,6 +35,13 @@ class VoiceTests(unittest.TestCase):
         self.assertEqual(model_choice('switch to gpt six terra',MODELS),'')
         self.assertIsNone(model_choice('tell me about the sol model',MODELS))
         self.assertIsNone(model_choice('change the wallpaper',MODELS))
+
+    def test_reasoning_effort_requires_an_explicit_supported_request(self):
+        efforts=['low','medium','high','xhigh','max']
+        self.assertEqual(effort_choice('set reasoning effort to max',efforts),'max')
+        self.assertEqual(effort_choice('change thinking to extra high',efforts),'xhigh')
+        self.assertIsNone(effort_choice('that was a high quality answer',efforts))
+        self.assertEqual(effort_choice('set reasoning to ultra',efforts),'')
 
     def test_spoken_reply_omits_code_and_link_destinations(self):
         text=speakable('**Done.** [report](/tmp/report.md)\n```bash\nrm file\n```')

@@ -107,6 +107,20 @@ def model_choice(command, models):
     return candidates[0] if family or len(candidates) == 1 else ''
 
 
+def effort_choice(command, efforts):
+    """Resolve a spoken reasoning effort only when it is an explicit setting."""
+    text = command.lower().strip(' .!?')
+    if not re.search(r'\b(?:reasoning|effort|thinking)\b', text):
+        return None
+    names = sorted(set(efforts), key=len, reverse=True)
+    aliases = {'xhigh': r'\b(?:extra\s*high|x\s*high|xhigh)\b'}
+    for effort in names:
+        pattern = aliases.get(effort, r'\b' + re.escape(effort) + r'\b')
+        if re.search(pattern, text):
+            return effort
+    return ''
+
+
 class CodexClient:
     """One local WebSocket, concurrent RPC requests, and live notifications."""
     def __init__(self, socket_path, callback):
@@ -188,10 +202,12 @@ class Engine:
         self.seen_items = set()
         self.turn_messages = {}
         self.models = []
+        self.model_catalog = []
         self.level = 0.0
         self.status = 'starting'
         self.detail = 'Connecting to your conversation'
         self.model = config.get('model', 'gpt-6-astra')
+        self.effort = config.get('effort', 'medium')
         self.last_heard = ''
         self.working = False
         self.quiet_until = 0.0
@@ -208,7 +224,8 @@ class Engine:
         with self.lock:
             status = 'muted' if self.muted.is_set() else ('speaking' if self.speaking.is_set() else self.status)
             return {'status': status, 'detail': self.detail, 'model': self.model,
-                    'models': list(self.models), 'level': self.level,
+                    'models': list(self.models), 'model_catalog': list(self.model_catalog),
+                    'effort': self.effort, 'level': self.level,
                     'heard': self.last_heard, 'connected': self.client is not None}
 
     def ready(self):
@@ -230,12 +247,18 @@ class Engine:
             try:
                 client = CodexClient(self.config['socket_path'], self._event)
                 models = client.call('model/list', {})['data']
-                self.models = [m['model'] for m in models if not m.get('hidden', False)]
-                params = {'threadId': self.config['thread_id'], 'excludeTurns': True}
+                self.model_catalog = [m for m in models if not m.get('hidden', False)]
+                self.models = [m['model'] for m in self.model_catalog]
+                params = {'threadId': self.config['thread_id'], 'excludeTurns': True,
+                          'model': self.config.get('model', self.model)}
                 if self.config.get('full_access'):
                     params.update(sandbox='danger-full-access', approvalPolicy='on-request')
-                result = client.call('thread/resume', params)
-                self.model = result.get('model', self.model)
+                client.call('thread/resume', params)
+                # A live resumed thread may report its previous model even when
+                # resume was given an override. The next turn carries our saved
+                # selection explicitly, so keep local state authoritative here.
+                self.model = self.config.get('model', self.model)
+                self.effort = self.config.get('effort', self.effort)
                 self.client = client
                 self.ready()
                 print('Connected to Codex; wake name: Jake; model:', self.model, flush=True)
@@ -354,6 +377,15 @@ class Engine:
     def select_model(self, model):
         self.commands.put(('model', model))
 
+    def select_effort(self, effort):
+        self.commands.put(('effort', effort))
+
+    def supported_efforts(self, model=None):
+        model = model or self.model
+        entry = next((item for item in self.model_catalog if item.get('model') == model), {})
+        return [item.get('reasoningEffort') for item in entry.get('supportedReasoningEfforts', [])
+                if item.get('reasoningEffort')]
+
     def _command_loop(self):
         from music import MediaController
         self.music = MediaController(self.say)
@@ -366,6 +398,9 @@ class Engine:
             try:
                 if kind == 'model':
                     self._switch_model(text)
+                    continue
+                if kind == 'effort':
+                    self._switch_effort(text)
                     continue
                 plain = text.lower().strip(' .!?')
                 if plain in {'mute', 'pause listening', 'stop listening', 'mute microphone', 'go to sleep'}:
@@ -386,8 +421,20 @@ class Engine:
                 if choice is not None:
                     if choice:
                         self._switch_model(choice)
+                        requested_effort = effort_choice(text, self.supported_efforts())
+                        if requested_effort:
+                            self._switch_effort(requested_effort)
+                        elif requested_effort == '':
+                            self.say('That model does not support the requested reasoning effort.')
                     else:
                         self.say('Please name a model from the model menu, for example, switch to Sol.')
+                    continue
+                effort = effort_choice(text, self.supported_efforts())
+                if effort is not None:
+                    if effort:
+                        self._switch_effort(effort)
+                    else:
+                        self.say('Please choose a reasoning effort from the menu, such as medium or high.')
                     continue
                 if not self.client:
                     self.say('Codex is reconnecting. Please try that command again shortly.')
@@ -402,6 +449,7 @@ class Engine:
                 # interpolation and no automatic retries of user actions.
                 self.client.call('turn/start', {'threadId': self.config['thread_id'],
                     'clientUserMessageId': str(uuid.uuid4()),
+                    'model': self.model, 'effort': self.effort,
                     'input': [{'type': 'text', 'text': prompt}]})
                 self.update('working', 'Working on your request')
             except Exception as exc:
@@ -415,12 +463,27 @@ class Engine:
             raise ValueError('That model is not in your Codex catalog')
         if not self.client:
             raise RuntimeError('Codex is disconnected')
-        result = self.client.call('thread/resume', {'threadId': self.config['thread_id'],
-                                                  'excludeTurns': True, 'model': model})
-        self.model = result.get('model', model)
+        self.client.call('thread/resume', {'threadId': self.config['thread_id'],
+                                           'excludeTurns': True, 'model': model})
+        self.model = model
+        allowed = self.supported_efforts(self.model)
+        if self.effort not in allowed:
+            self.effort = next((level for level in ('medium', 'low') if level in allowed),
+                               allowed[0] if allowed else 'medium')
         self.config['model'] = self.model
+        self.config['effort'] = self.effort
         save_config(self.config)
-        self.say('Using ' + self.model + ' for your next request.')
+        self.say('Using ' + self.model + ' with ' + self.effort + ' reasoning for your next request.')
+        self.ready()
+
+    def _switch_effort(self, effort):
+        allowed = self.supported_efforts()
+        if effort not in allowed:
+            raise ValueError('That reasoning effort is not supported by the selected model')
+        self.effort = effort
+        self.config['effort'] = effort
+        save_config(self.config)
+        self.say('Reasoning effort set to ' + effort + ' for your next request.')
         self.ready()
 
     def _transcription_loop(self):
